@@ -43,9 +43,6 @@ class Bot:
         self.__executor = AgentExecutor(agent=agent, tools=tools, verbose=verbose)
 
     def chat(self, question: str):
-        # add question to memory
-        self.__memory.add_user_message_with_time(question)
-
         # answer
         answer = self.__executor.invoke({
             'input': question,
@@ -55,6 +52,7 @@ class Bot:
         # parse output
         answer = answer['output']
 
-        # add answer to memory
+        # add the question and the answer to memory
+        self.__memory.add_user_message_with_time(question)
         self.__memory.add_ai_message_with_time(answer)
         return answer
