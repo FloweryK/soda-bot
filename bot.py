@@ -13,11 +13,7 @@ load_dotenv('.env')
 class Bot:
     # prompt (hidden)
     __prompt = ChatPromptTemplate.from_messages([
-        ("system", "Your name is {name}.\n"
-                    f"You are a helpful assistant.\n"
-                    # f"You must say in at most 5 sentences, and each sentence should be less than 30 words.\n"
-                    # f"Do not use tools when you don't need them."
-                    ),
+        ("system", "You are a helpful assistant named {name}."),
         MessagesPlaceholder(variable_name="chat_history"),
         ("user", "{input}"),
         MessagesPlaceholder(variable_name="agent_scratchpad"),
