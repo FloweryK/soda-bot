@@ -1,6 +1,10 @@
-from colorama import Fore
 from bot import Bot
 from tools import math
+
+import colorama
+from colorama import Fore
+colorama.init()
+
 
 
 def main():
@@ -12,7 +16,8 @@ def main():
     # chat
     while True:
         # question
-        question = input(f"{Fore.CYAN}You:{Fore.RESET} ")
+        print(f"{Fore.CYAN}You:{Fore.RESET} ", end='')
+        question = input()
 
         # answer
         answer = bot.chat(question)
