@@ -1,4 +1,5 @@
 import os
+import emoji
 import azure.cognitiveservices.speech as speechsdk
 
 
@@ -24,6 +25,10 @@ class TTS:
         )
 
     def synthesize(self, text):
+        # remove emojis
+        text = emoji.replace_emoji(text, replace='')
+
+        # make ssml string
         ssml_string = f"""
         <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="en-US">
             <voice name="{self.VOICE_NAME}">
