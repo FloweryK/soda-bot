@@ -22,10 +22,10 @@ class Bot:
     # reasoning engine (hidden)
     __llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
 
-    # memory
+    # memory (hidden)
     __memory = ChatHistory()
 
-    # executor
+    # executor (hidden)
     __executor = None
 
     def __init__(self, name, tools, verbose=False) -> None:
