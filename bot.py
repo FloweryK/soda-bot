@@ -3,7 +3,7 @@ from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 # custom utils
-from utils.memory import ChatHistory
+from utils.memory import Memory
 
 # env
 from dotenv import load_dotenv
@@ -14,7 +14,7 @@ class Bot:
     # prompt (hidden)
     __prompt = ChatPromptTemplate.from_messages([
         ("system", "You are a helpful assistant named {name}."),
-        MessagesPlaceholder(variable_name="chat_history"),
+        MessagesPlaceholder(variable_name="short_term_memory"),
         ("user", "{input}"),
         MessagesPlaceholder(variable_name="agent_scratchpad"),
     ])
@@ -22,13 +22,7 @@ class Bot:
     # reasoning engine (hidden)
     __llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
 
-    # memory (hidden)
-    __memory = ChatHistory()
-
-    # executor (hidden)
-    __executor = None
-
-    def __init__(self, name, tools, verbose=False) -> None:
+    def __init__(self, name, tools, short_term_limit, verbose=False) -> None:
         # name
         self.__prompt = self.__prompt.partial(name=name)
 
@@ -37,12 +31,16 @@ class Bot:
 
         # executor
         self.__executor = AgentExecutor(agent=agent, tools=tools, verbose=verbose)
+        
+        # memory
+        self.__memory = Memory(short_term_limit=short_term_limit)
+
 
     def chat(self, question: str):
         # answer
         answer = self.__executor.invoke({
             'input': question,
-            'chat_history': self.__memory.messages
+            'short_term_memory': self.__memory.get_short_term_memory()
         })
 
         # parse output

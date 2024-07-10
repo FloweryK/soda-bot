@@ -10,7 +10,7 @@ colorama.init()
 def main():
     # define bot
     tools = [math.multiply, math.add, math.exponentiate]
-    bot = Bot(name='Soda', tools=tools, verbose=True)
+    bot = Bot(name='Soda', tools=tools, short_term_limit=10, verbose=True)
 
 
     # chat
