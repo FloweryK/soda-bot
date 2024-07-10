@@ -5,10 +5,6 @@ from langchain_openai import ChatOpenAI
 # custom utils
 from utils.memory import Memory
 
-# env
-from dotenv import load_dotenv
-load_dotenv('.env')
-
 
 class Bot:
     prompt_text = """
