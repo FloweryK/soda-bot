@@ -1,16 +1,18 @@
-import emoji
+# colorama init
 import colorama
-from colorama import Fore
+colorama.init()
+
+# env init
 from dotenv import load_dotenv
+load_dotenv('.env')
+
+# imports
+import emoji
+from colorama import Fore
 from bot import Bot
 from tools import math
-from utils.tts import AzureTTS
-from utils.stt import RealtimeSTT
-
-
-# intializations
-load_dotenv('.env')
-colorama.init()
+from utils.tts.azure_tts import AzureTTS
+from utils.stt.realtime_stt import RealtimeSTT
 
 
 def main():
@@ -24,7 +26,7 @@ def main():
     # tts
     tts = AzureTTS(
         language="en-US",
-        voice_name="en-US-AshleyNeural",
+        voice="en-US-AshleyNeural",
         rate="+10.00%",
         pitch="+25.00%"
     )

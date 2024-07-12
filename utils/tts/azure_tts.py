@@ -3,7 +3,7 @@ import azure.cognitiveservices.speech as speechsdk
 
 
 class AzureTTS:
-    def __init__(self, language, voice_name, rate, pitch):
+    def __init__(self, language, voice, rate, pitch):
         # configs
         speech_config = speechsdk.SpeechConfig(
             subscription=os.environ.get('AZURE_SPEECH_KEY'), 
@@ -22,7 +22,7 @@ class AzureTTS:
 
         # configs
         self.language = language
-        self.vocie_name = voice_name
+        self.vocie = voice
         self.rate = rate
         self.pitch = pitch
 
@@ -30,7 +30,7 @@ class AzureTTS:
         # make ssml string
         ssml_string = f"""
         <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="{self.language}">
-            <voice name="{self.vocie_name}">
+            <voice name="{self.vocie}">
                 <mstts:express-as style="cheerful">
                     <prosody rate="{self.rate}" pitch="{self.pitch}">
                         {text}
