@@ -1,14 +1,9 @@
 import os
-import emoji
 import azure.cognitiveservices.speech as speechsdk
 
 
-class TTS:
-    VOICE_NAME = "en-US-AshleyNeural"
-    RATE = "+10.00%"
-    PITCH = "+25.00%"
-
-    def __init__(self):
+class AzureTTS:
+    def __init__(self, language, voice_name, rate, pitch):
         # configs
         speech_config = speechsdk.SpeechConfig(
             subscription=os.environ.get('AZURE_SPEECH_KEY'), 
@@ -25,16 +20,19 @@ class TTS:
             audio_config=audio_config
         )
 
-    def synthesize(self, text):
-        # remove emojis
-        text = emoji.replace_emoji(text, replace='')
+        # configs
+        self.language = language
+        self.vocie_name = voice_name
+        self.rate = rate
+        self.pitch = pitch
 
+    def synthesize(self, text):
         # make ssml string
         ssml_string = f"""
-        <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="en-US">
-            <voice name="{self.VOICE_NAME}">
+        <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="{self.language}">
+            <voice name="{self.vocie_name}">
                 <mstts:express-as style="cheerful">
-                    <prosody rate="{self.RATE}" pitch="{self.PITCH}">
+                    <prosody rate="{self.rate}" pitch="{self.pitch}">
                         {text}
                     </prosody>
                 </mstts:express-as>

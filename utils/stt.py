@@ -82,7 +82,7 @@ if platform.system() != 'Darwin':
     INIT_HANDLE_BUFFER_OVERFLOW = True
 
 
-class AudioToTextRecorder:
+class RealtimeSTT:
     """
     A class responsible for capturing audio from the microphone, detecting
     voice activity, and then transcribing the captured audio using the
@@ -444,7 +444,7 @@ class AudioToTextRecorder:
         self.device = "cuda" if self.device == "cuda" and torch.cuda.is_available() else "cpu"
 
         self.transcript_process = mp.Process(
-            target=AudioToTextRecorder._transcription_worker,
+            target=RealtimeSTT._transcription_worker,
             args=(
                 child_transcription_pipe,
                 model,
@@ -469,7 +469,7 @@ class AudioToTextRecorder:
                          f" buffer size: {self.buffer_size}"
                          )
             self.reader_process = mp.Process(
-                target=AudioToTextRecorder._audio_data_worker,
+                target=RealtimeSTT._audio_data_worker,
                 args=(
                     self.audio_queue,
                     self.sample_rate,
