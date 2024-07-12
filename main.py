@@ -26,14 +26,14 @@ def main():
     # chat
     while True:
         # question
-        print(f"{Fore.CYAN}You:{Fore.RESET} ", end='')
+        print(f"{Fore.CYAN}You:{Fore.RESET} ")
         question = stt.text()
         print(question)
 
         if question:
             # answer
             answer = bot.chat(question)
-            print(f"{Fore.MAGENTA}Bot:{Fore.RESET} {answer}")
+            print(f"\n{Fore.MAGENTA}Bot:{Fore.RESET} {answer}")
 
             # speak
             tts.synthesize(answer)
