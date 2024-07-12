@@ -9,16 +9,16 @@ load_dotenv('.env')
 # imports
 import emoji
 from colorama import Fore
-from bot import Bot
 from tools import math
-from utils.tts.azure_tts import AzureTTS
-from utils.stt.realtime_stt import RealtimeSTT
+from core.brain import Brain
+from core.tts.azure_tts import AzureTTS
+from core.stt.realtime_stt import RealtimeSTT
 
 
 def main():
-    # bot
+    # brain
     tools = [math.multiply, math.add, math.exponentiate]
-    bot = Bot(name='Soda', tools=tools, short_term_limit=10, verbose=False)
+    brain = Brain(name='Soda', tools=tools, short_term_limit=10, verbose=False)
 
     # stt
     stt = RealtimeSTT(language="en")
@@ -39,7 +39,7 @@ def main():
 
         if question:
             # answer
-            answer = bot.chat(question)
+            answer = brain.chat(question)
             print(f"\n{Fore.MAGENTA}Bot:{Fore.RESET} {answer}")
 
             # speak
