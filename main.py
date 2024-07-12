@@ -9,7 +9,6 @@ load_dotenv('.env')
 # imports
 import emoji
 from colorama import Fore
-from tools import math
 from core.brain import Brain
 from core.tts.azure_tts import AzureTTS
 from core.stt.realtime_stt import RealtimeSTT
@@ -17,8 +16,7 @@ from core.stt.realtime_stt import RealtimeSTT
 
 def main():
     # brain
-    tools = [math.multiply, math.add, math.exponentiate]
-    brain = Brain(name='Soda', tools=tools, short_term_limit=10, verbose=False)
+    brain = Brain(name='Soda', short_term_limit=10)
 
     # stt
     stt = RealtimeSTT(language="en")

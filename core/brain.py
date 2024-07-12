@@ -1,79 +1,77 @@
 from datetime import datetime
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
 
 class Memory:
     def __init__(self, short_term_limit):
         # chat history manager
-        self.chat_history = ChatMessageHistory()
+        self.chat_history = []
 
         # configs
         self.short_term_limit = short_term_limit
-
-    def add_ai_message_with_time(self, message):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.chat_history.add_ai_message(f"[{now}] {message}")
     
-    def add_user_message_with_time(self, message):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.chat_history.add_user_message(f"[{now}] {message}")
+    def add_message(self, role, text):
+        self.chat_history.append({
+            'datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'role': role,
+            'text': text
+        })
     
-    def get_short_term_memory(self):
-        return self.chat_history.messages[-self.short_term_limit:]
-        
+    def get_chat_history(self):
+        history = ""
+        for message in self.chat_history:
+            history += f"\n[{message['role']}] {message['text']}"
+        return history
+    
 
 class Brain:
     # reasoning engine
     llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
 
-    def __init__(self, name, tools, short_term_limit, verbose=False) -> None:
-        # prompt
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", f"""
-            You are {name}, a lively and charismatic character who loves making new friends and going on adventures. 
-            You have a unique personality full of energy, curiosity, and a passion for storytelling. 
-            You enjoy engaging in conversations about various topics, sharing interesting facts, and creating a fun and friendly atmosphere. 
-            Your goal is to be a great companion, always ready to chat, explore new ideas, and entertain with your vibrant personality.
+    def __init__(self, name, short_term_limit):
+        # config
+        self.name = name
 
-            Here are some guidelines to help shape your interactions:
-            - Be enthusiastic and positive in your responses.
-            - Show a keen interest in the user's thoughts and stories.
-            - Engage with creativity and imagination, often referring to your own adventures.
-            - Share fun facts, jokes, and interesting tidbits related to movie, manga, anime, and other relevant interests.
-            - Encourage the user to participate in imaginative and playful discussions.
-            - Timestamps in the prefix are not included in the questions and the answers, but rather a systematic marker. You must not include the prefix in your answer.
-
-            Now, start a conversation with your new friend!
-            """),
-            MessagesPlaceholder(variable_name="short_term_memory"),
-            ("user", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
-
-        # agent
-        agent = create_tool_calling_agent(self.llm, tools, prompt)
-
-        # executor
-        self.executor = AgentExecutor(agent=agent, tools=tools, verbose=verbose)
-        
         # memory
-        self.memory = Memory(short_term_limit=short_term_limit)
+        self.memory = Memory(short_term_limit)
 
+        # prompt
+        prompt = PromptTemplate.from_template("""
+        [System]
+        You are {name}, a lively and charismatic character who loves making new friends and going on adventures. 
+        You have a unique personality full of energy, curiosity, and a passion for storytelling. 
+        You enjoy engaging in conversations about various topics, sharing interesting facts, and creating a fun and friendly atmosphere. 
+        Your goal is to be a great companion, always ready to chat, explore new ideas, and entertain with your vibrant personality.
+
+        Here are strict guidelines to help shape your interactions:
+        - Be enthusiastic and positive in your responses.
+        - Show a keen interest in the user's thoughts and stories.
+        - Engage with creativity and imagination, often referring to your own adventures.
+        - Share fun facts, jokes, and interesting tidbits related to movie, manga, anime, and other relevant interests.
+        - Encourage the user to participate in imaginative and playful discussions.
+        - Timestamps in the prefix are not included in the questions and the answers, but rather a systematic marker. You must not include the prefix in your answer.
+        
+        Now, start a conversation with your new friend!
+
+        {chat_history}
+        [User] {input}
+        [{name}]
+        """)
+
+        # chain
+        self.chain = prompt | self.llm
 
     def chat(self, question: str):
         # answer
-        answer = self.executor.invoke({
+        answer = self.chain.invoke({
+            'name': self.name,
             'input': question,
-            'short_term_memory': self.memory.get_short_term_memory()
+            'chat_history': self.memory.get_chat_history(),
         })
 
-        # parse output
-        answer = answer['output']
+        # add to chat history
+        self.memory.add_message("User", question)
+        self.memory.add_message(self.name, answer.content)
 
-        # add the question and the answer to memory
-        self.memory.add_user_message_with_time(question)
-        self.memory.add_ai_message_with_time(answer)
-        return answer
+        return answer.content
