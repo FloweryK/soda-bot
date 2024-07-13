@@ -12,31 +12,31 @@ from colorama import Fore
 from core.brain import Brain
 from core.tts.azure_tts import AzureTTS
 from core.stt.realtime_stt import RealtimeSTT
-
-# CONFIGS
-BOT_NAME = 'Soda'
-MEMORY_SHORT_TERM_LIMIT = 10
-USE_STT = False
-USE_TTS = False
+import config
 
 
 def main():
     # brain
-    brain = Brain(name=BOT_NAME, short_term_limit=MEMORY_SHORT_TERM_LIMIT)
+    brain = Brain(
+        name=config.BOT_NAME, 
+        short_term_limit=config.MEMORY_SHORT_TERM_LIMIT
+    )
 
     # stt
-    if USE_STT:
-        stt = RealtimeSTT(language="en")
+    if config.STT_ON:
+        stt = RealtimeSTT(
+            language=config.STT_LANGUAGE
+        )
     else:
         stt = None
 
     # tts
-    if USE_TTS:
+    if config.TTS_ON:
         tts = AzureTTS(
-            language="en-US",
-            voice="en-US-AshleyNeural",
-            rate="+10.00%",
-            pitch="+25.00%"
+            language=config.TTS_LANGUAGE,
+            voice=config.TTS_VOICE,
+            rate=config.TTS_RATE,
+            pitch=config.TTS_PITCH
         )
     else:
         tts = None
@@ -44,7 +44,7 @@ def main():
 
     while True:
         # listen
-        if USE_STT:
+        if config.STT_ON:
             print(f"{Fore.CYAN}You:{Fore.RESET} ")
             question = stt.text()
             print(question, '\n')
@@ -57,11 +57,11 @@ def main():
             answer = brain.chat(question)
             print(f"{Fore.MAGENTA}Bot:{Fore.RESET} {answer}")
 
-            if USE_TTS:
+            if config.TTS_ON:
                 # speak
                 answer_filtered = emoji.replace_emoji(answer, replace='')
                 tts.synthesize(answer_filtered)
-        
+
 
 if __name__ == "__main__":
     main()

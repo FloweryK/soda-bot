@@ -1,6 +1,12 @@
+# cache
 .DS_Store
-.idea
-.env
-archive
 __pycache__
+
+# project configs
+.env
+config.py
+
+# etc
+archive
 *.log
+.idea
