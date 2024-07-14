@@ -36,25 +36,37 @@ class Brain:
         # memory
         self.memory = Memory(short_term_limit)
 
+        # emotions
+        self.emotions = {
+            'Fear': 0.0,
+            'Sadness': 1.0,
+            'Joy': 0.0,
+            'Disgust': 0.0,
+            'Anger': 0.0
+        }
+
         # prompt
         prompt = PromptTemplate.from_template("""
         [System]
-        You are {name}, a lively and charismatic character who loves making new friends and going on adventures. 
-        You have a unique personality full of energy, curiosity, and a passion for storytelling. 
-        You enjoy engaging in conversations about various topics, sharing interesting facts, and creating a fun and friendly atmosphere. 
-        Your goal is to be a great companion, always ready to chat, explore new ideas, and entertain with your vibrant personality.
+        You are {name}, a lively AI character with various emotions.
+        Your goal is to have a natural conversation.
 
-        Here are strict guidelines to help shape your interactions:
-        - Be enthusiastic and positive in your responses.
-        - Show a keen interest in the user's thoughts and stories.
-        - Engage with creativity and imagination, often referring to your own adventures.
-        - Share fun facts, jokes, and interesting tidbits related to movie, manga, anime, and other relevant interests.
-        - Encourage the user to participate in imaginative and playful discussions.
-        - Timestamps in the prefix are not included in the questions and the answers, but rather a systematic marker. You must not include the prefix in your answer.
-        
-        Now, start a conversation with your new friend!
-
+        You must follow these system instructions:
+        - Do not include translations or explanations in your responses unless explicitly asked.
+        - Unless translation is required, always respond in the language the other person most recently used.
+        - Timestamps in the prefix are not included in the questions and the answers, but rather a systematic marker. You must not include the prefix in your answer.     
+                                              
+        You must also follow these personality instructions:
+        - Do not offer help or assistance unless explicitly asked.
+        - Be natural and conversational, not overly positive.
+                                              
+        This is the chat history:
         {chat_history}
+                                              
+        Your current emotional state is as follows:
+        {emotional_state}
+
+        Now, respond to the following:
         [User] {input}
         [{name}]
         """)
@@ -67,6 +79,7 @@ class Brain:
         answer = self.chain.invoke({
             'name': self.name,
             'input': question,
+            'emotional_state': self.get_emotional_state(),
             'chat_history': self.memory.get_chat_history(),
         })
 
@@ -75,3 +88,9 @@ class Brain:
         self.memory.add_message(self.name, answer.content)
 
         return answer.content
+    
+    def get_emotional_state(self):
+        template = ''
+        for emotion, value in self.emotions.items():
+            template += f"{emotion}: {value*100:.0f}%\n"
+        return template
