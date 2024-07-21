@@ -8,6 +8,9 @@ class Memory:
 
         # chat history manager
         self.chat_history = []
+
+        # current context
+        self.contexts = None
     
     def add_message(self, role, text, emotions):
         self.chat_history.append({

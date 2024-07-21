@@ -5,8 +5,9 @@ from langchain_core.output_parsers import JsonOutputParser
 
 
 class LLMOutputFormat(BaseModel):
-    text: str = Field(description="converstaion message text")
-    emotions: dict = Field(description="emotional state")
+    text: str = Field(description="Conversation message text (emotional states must not be included in this field).")
+    emotions: dict = Field(description="Current emotional state (each emotion value ranges from 0 to 1) in JSON format.")
+    contexts: str = Field(description="A summary of the topics and context from chat history in one sentence.")
 
 
 class Brain:
@@ -34,12 +35,11 @@ class Brain:
         - You must respond in the language the other person most recently used, unless translation is required.
         - You must act natural, not overly positive.
         - You must respond based on your emotions. Your emotions change over time, based on the chat history.
-        - You must provide your current emotions (with each emotion value from 0 to 1) as a JSON format. 
         - Format instructions: {format_instructions}
-        - You must not contain the emotional states in the text section.
         ----------------------------------------------------------------------------------------------
         Now, start a conversation. Your initial emotions is: {emotions}
         {chat_history}
+        [System] current topics and contexts are: {contexts}
         [User] {input}
         [{name}]
         """)
@@ -57,6 +57,7 @@ class Brain:
             'format_instructions': self.parser.get_format_instructions(),
             'emotions': self.emotions,
             'chat_history': self.memory.get_chat_history(),
+            'contexts': self.memory.contexts,
             'input': question,
         })
 
@@ -64,5 +65,11 @@ class Brain:
         self.memory.add_message("User", question, None)
         self.memory.add_message(self.name, result['text'], result['emotions'])
 
-        return f"{result['text']}\n({result['emotions']})"
+        # save context
+        self.memory.contexts = result['contexts']
+
+        return f"""{result['text']}
+        (emotions: {result['emotions']})
+        (contexts: {result['contexts']})
+        """
     
