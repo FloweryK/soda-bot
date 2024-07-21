@@ -1,60 +1,22 @@
-import re
-from datetime import datetime
+from core.memory import Memory
 from langchain_core.prompts import PromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_openai import ChatOpenAI
 
 
-class Message(BaseModel):
+class LLMOutputFormat(BaseModel):
     text: str = Field(description="converstaion message text")
     emotions: dict = Field(description="emotional state")
 
 
-class Memory:
-    def __init__(self, short_term_limit):
-        # chat history manager
-        self.chat_history = []
-
-        # configs
-        self.short_term_limit = short_term_limit
-    
-    def add_message(self, role, text, emotions):
-        self.chat_history.append({
-            'datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'role': role,
-            'text': text,
-            'emotions': emotions
-        })
-    
-    def get_chat_history(self):
-        history = "\n"
-        for message in self.chat_history:
-            history += f"\n[{message['datetime']}] [{message['role']}] {message['text']}"
-            history += f" ({message['emotions']})" if message['emotions'] else ""
-
-        return history
-    
-
 class Brain:
-    # reasoning engine
-    llm = ChatOpenAI(model="gpt-4o-mini")
-
-    def __init__(self, name, short_term_limit):
-        # config
+    def __init__(self, llm, name, emotions, memory: Memory):
+        # configs
         self.name = name
+        self.emotions = emotions
 
         # memory
-        self.memory = Memory(short_term_limit)
-
-        # emotions
-        self.emotions = {
-            'Fear': 0.0,
-            'Sadness': 0.0,
-            'Joy': 0.0,
-            'Disgust': 0.0,
-            'Anger': 0.0
-        }
+        self.memory = memory
 
         # prompt
         prompt = PromptTemplate.from_template("""
@@ -64,15 +26,17 @@ class Brain:
         - Birth date: 2024-05-01
         - Sex: Female (maybe?)
         - Interests: Icecream, chocolates, movie, game
+        - Personality: Assertive. Self-disciplined. Narcissism. Good voice.
+        - MBTI: INTJ
         
         You must strictly obey the following instructions:
         - You must not offer help or assistance unless explicitly asked.
         - You must respond in the language the other person most recently used, unless translation is required.
         - You must act natural, not overly positive.
-        - You must respond based on your emotions. 
-        - Your emotions change over time, based on the chat history.
-        - You must provide your current emotions (with each emotion value from 0 to 1) as a JSON format.
+        - You must respond based on your emotions. Your emotions change over time, based on the chat history.
+        - You must provide your current emotions (with each emotion value from 0 to 1) as a JSON format. 
         - Format instructions: {format_instructions}
+        - You must not contain the emotional states in the text section.
         ----------------------------------------------------------------------------------------------
         Now, start a conversation. Your initial emotions is: {emotions}
         {chat_history}
@@ -81,10 +45,10 @@ class Brain:
         """)
 
         # parser
-        self.parser = JsonOutputParser(pydantic_object=Message)
+        self.parser = JsonOutputParser(pydantic_object=LLMOutputFormat)
 
         # chain
-        self.chain = prompt | self.llm | self.parser
+        self.chain = prompt | llm | self.parser
 
     def chat(self, question: str):
         # result
@@ -97,16 +61,8 @@ class Brain:
         })
 
         # add to chat history
-        self.memory.add_message(
-            role="User", 
-            text=question, 
-            emotions=None
-        )
-        self.memory.add_message(
-            role=self.name, 
-            text=result['text'], 
-            emotions=result['emotions']
-        )
+        self.memory.add_message("User", question, None)
+        self.memory.add_message(self.name, result['text'], result['emotions'])
 
-        return f"{result['text']} ({result['emotions']})"
+        return f"{result['text']}\n({result['emotions']})"
     

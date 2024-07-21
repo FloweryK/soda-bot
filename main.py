@@ -10,6 +10,7 @@ load_dotenv('.env')
 import emoji
 from colorama import Fore
 from core.brain import Brain
+from core.memory import Memory
 from core.tts.azure_tts import AzureTTS
 from core.stt.realtime_stt import RealtimeSTT
 import config
@@ -18,8 +19,10 @@ import config
 def main():
     # brain
     brain = Brain(
-        name=config.BOT_NAME, 
-        short_term_limit=config.MEMORY_SHORT_TERM_LIMIT
+        llm=config.LLM,
+        name=config.NAME, 
+        emotions=config.EMOTIONS,
+        memory=Memory(config.MEMORY_LIMIT)
     )
 
     # stt

@@ -1,6 +1,13 @@
+from langchain_openai import ChatOpenAI
+
+
+# memory config
+MEMORY_LIMIT = 10
+
 # brain config
-BOT_NAME = 'Soda'
-MEMORY_SHORT_TERM_LIMIT = 10
+LLM = ChatOpenAI(model="gpt-4o-mini")
+NAME = 'Soda'
+EMOTIONS = {'Fear': 0.0, 'Sadness': 0.0, 'Joy': 0.0, 'Disgust': 0.0, 'Anger': 0.0}
 
 # stt config
 STT_ON = False
