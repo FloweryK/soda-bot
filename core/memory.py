@@ -2,9 +2,9 @@ from datetime import datetime
 
 
 class Memory:
-    def __init__(self, memory_limit):
+    def __init__(self, short_term_limit):
         # configs
-        self.memory_limit = memory_limit
+        self.short_term_limit = short_term_limit
 
         # chat history manager
         self.chat_history = []

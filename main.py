@@ -17,12 +17,17 @@ import config
 
 
 def main():
+    # memory
+    memory = Memory(
+        short_term_limit=config.SHORT_TERM_LIMIT, 
+    )
+
     # brain
     brain = Brain(
         llm=config.LLM,
         name=config.NAME, 
         emotions=config.EMOTIONS,
-        memory=Memory(config.MEMORY_LIMIT)
+        memory=memory
     )
 
     # stt

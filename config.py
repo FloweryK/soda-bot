@@ -1,11 +1,11 @@
-from langchain_openai import ChatOpenAI
+from langchain_community.chat_models import ChatOllama
 
 
 # memory config
-MEMORY_LIMIT = 10
+SHORT_TERM_LIMIT = 10
 
 # brain config
-LLM = ChatOpenAI(model="gpt-4o-mini")
+LLM = ChatOllama(model="mistral-nemo")
 NAME = 'Soda'
 EMOTIONS = {'Fear': 0.0, 'Sadness': 0.0, 'Joy': 0.0, 'Disgust': 0.0, 'Anger': 0.0}
 
