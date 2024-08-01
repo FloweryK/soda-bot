@@ -62,13 +62,17 @@ def main():
 
         if question:
             # answer
-            answer = brain.chat(question)
-            print(f"{Fore.MAGENTA}Bot:{Fore.RESET} {answer}")
+            result = brain.chat(question)
+            text = result['text']
+            emotions = result['emotions']
+            contexts = result['contexts']
+            
+            print(f"{Fore.MAGENTA}Bot:{Fore.RESET} {text}\n({emotions})\n({contexts})")
 
             if config.TTS_ON:
                 # speak
-                answer_filtered = emoji.replace_emoji(answer, replace='')
-                tts.synthesize(answer_filtered)
+                text = emoji.replace_emoji(text, replace='')
+                tts.synthesize(text)
 
 
 if __name__ == "__main__":

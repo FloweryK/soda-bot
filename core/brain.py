@@ -70,8 +70,5 @@ class Brain:
         # save context
         self.memory.contexts = result['contexts']
 
-        return f"""{result['text']}
-        (emotions: {result['emotions']})
-        (contexts: {result['contexts']})
-        """
+        return result
     
