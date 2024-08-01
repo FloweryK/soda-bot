@@ -19,6 +19,7 @@ import config
 def main():
     # memory
     memory = Memory(
+        save_dir=config.SAVE_DIR,
         short_term_limit=config.SHORT_TERM_LIMIT, 
     )
 
