@@ -19,15 +19,16 @@ import config
 def main():
     # memory
     memory = Memory(
-        save_dir=config.SAVE_DIR,
-        short_term_limit=config.SHORT_TERM_LIMIT, 
+        save_dir=config.MEMORY_SAVE_DIR,
+        short_term_limit=config.MEMORY_SHORT_TERM_LIMIT, 
     )
 
     # brain
     brain = Brain(
-        llm=config.LLM,
-        name=config.NAME, 
-        emotions=config.EMOTIONS,
+        llm=config.BRAIN_LLM,
+        name=config.BRAIN_NAME, 
+        prompt=config.BRAIN_PROMPT,
+        emotions=config.BRAIN_EMOTIONS,
         memory=memory
     )
 

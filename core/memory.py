@@ -22,6 +22,9 @@ class Memory:
         self.contexts = None
     
     def initialize_messages(self, save_dir):
+        # create save_dir
+        os.makedirs(save_dir, exist_ok=True)
+
         # set today's save path
         self.path_today = os.path.join(save_dir, datetime.now().strftime("%Y%m%d")) + '.pickle'
 
