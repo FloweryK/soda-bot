@@ -21,15 +21,12 @@ def format_user_message():
 
 
 def format_ai_message(text, emotions, contexts):
-    # text
-    result = f"{Fore.MAGENTA}Bot:{Fore.RESET} {text}"
-
-    # emotions
     emotions = {key: f"{value:.1f}" for key, value in emotions.items()}
-    result += f"\n(emotions: {emotions})"
-
-    # contexts
-    result += f"\n(contexts: {contexts})"
+    result = (
+        f"{Fore.MAGENTA}Bot:{Fore.RESET} {text}\n"
+        f"(emotions: {emotions})\n"
+        f"(contexts: {contexts})"
+    )
     return result
 
 
@@ -45,62 +42,52 @@ def clear_previous_lines(n=3):
 def main():
     # memory
     memory = Memory(
-        save_dir=config.MEMORY_SAVE_DIR,
-        short_term_limit=config.MEMORY_SHORT_TERM_LIMIT, 
+        config.MEMORY_SAVE_DIR,
+        config.MEMORY_SHORT_TERM_LIMIT, 
     )
 
     # brain
     brain = Brain(
-        llm=config.BRAIN_LLM,
-        name=config.BRAIN_NAME, 
-        prompt=config.BRAIN_PROMPT,
-        emotions=config.BRAIN_EMOTIONS,
-        memory=memory
+        config.BRAIN_LLM,
+        config.BRAIN_NAME, 
+        config.BRAIN_PROMPT,
+        config.BRAIN_EMOTIONS,
+        memory
     )
 
     # stt
-    if config.STT_ON:
-        stt = RealtimeSTT(
-            language=config.STT_LANGUAGE
-        )
-    else:
-        stt = None
+    stt = RealtimeSTT(
+        language=config.STT_LANGUAGE
+    ) if config.STT_ON else None
 
     # tts
-    if config.TTS_ON:
-        tts = AzureTTS(
-            language=config.TTS_LANGUAGE,
-            voice=config.TTS_VOICE,
-            rate=config.TTS_RATE,
-            pitch=config.TTS_PITCH
-        )
-    else:
-        tts = None
+    tts = AzureTTS(
+        config.TTS_LANGUAGE,
+        config.TTS_VOICE,
+        config.TTS_RATE,
+        config.TTS_PITCH
+    ) if config.TTS_ON else None
 
 
     while True:
-        # STT
+        # get user's input as question
+        print(format_user_message(), end='')
         if config.STT_ON:
-            print(format_user_message())
+            print()
             question = stt.text()
             print(question, '\n')
         else:
-            print(format_user_message(), end='')
             question = input()
 
-        # LLM
+        # get ai's response to the question
         if question:
-            # create a room for ai's messages
             text = ''
             emotions = {}
             contexts = ''
             print(format_ai_message(text, emotions, contexts))
 
             for s in brain.stream(question):
-                # clear the room
                 clear_previous_lines(n=3)
-
-                # print the result
                 text = s['text'] if 'text' in s else text
                 emotions = s['emotions'] if 'emotions' in s else emotions
                 contexts = s['contexts'] if 'contexts' in s else contexts
@@ -109,9 +96,8 @@ def main():
             # add to chat history
             brain.add_chat_history(question, text, emotions, contexts)
 
-            # TTS
+            # create tts from the response
             if config.TTS_ON:
-                # speak
                 text = emoji.replace_emoji(text, replace='')
                 tts.synthesize(text)
 
