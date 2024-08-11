@@ -16,27 +16,18 @@ from core.stt.realtime_stt import RealtimeSTT
 import config
 
 
-def format_user_message():
-    return f"{Fore.CYAN}You:{Fore.RESET} "
+def update_and_print(new_value, old_value, label):
+    if new_value:
+        if isinstance(new_value, dict):
+            print(str(new_value)[len(str(old_value))-1:-1], end='')
+        elif isinstance(new_value, str):
+            print(new_value[len(old_value):], end='')
+        else:
+            raise TypeError("Unimplemented input type:", new_value, type(new_value))
+    else:
+        print(f"{label}", end='')
 
-
-def format_ai_message(text, emotions, contexts):
-    emotions = {key: f"{value:.1f}" for key, value in emotions.items()}
-    result = (
-        f"{Fore.MAGENTA}Bot:{Fore.RESET} {text}\n"
-        f"(emotions: {emotions})\n"
-        f"(contexts: {contexts})"
-    )
-    return result
-
-
-def clear_previous_lines(n=3):
-    # Move the cursor up by 'n' lines
-    print(f"\033[{n}A", end='')
-
-    # Clear each line
-    for _ in range(n):
-        print("\033[K", end='')
+    return new_value
 
 
 def main():
@@ -71,7 +62,8 @@ def main():
 
     while True:
         # get user's input as question
-        print(format_user_message(), end='')
+        print(f"{Fore.CYAN}You:{Fore.RESET} ", end='')
+
         if config.STT_ON:
             print()
             question = stt.text()
@@ -84,14 +76,15 @@ def main():
             text = ''
             emotions = {}
             contexts = ''
-            print(format_ai_message(text, emotions, contexts))
 
             for s in brain.stream(question):
-                clear_previous_lines(n=3)
-                text = s['text'] if 'text' in s else text
-                emotions = s['emotions'] if 'emotions' in s else emotions
-                contexts = s['contexts'] if 'contexts' in s else contexts
-                print(format_ai_message(text, emotions, contexts))
+                if 'text' in s:
+                    text = update_and_print(s['text'], text, f"{Fore.MAGENTA}Bot:{Fore.RESET} ")
+                if 'emotions' in s:
+                    emotions = update_and_print(s['emotions'], emotions, '\n\temotions -> ')
+                if 'contexts' in s:
+                    contexts = update_and_print(s['contexts'], contexts, '\n\tcontexts -> ')
+            print()
 
             # add to chat history
             brain.add_chat_history(question, text, emotions, contexts)
