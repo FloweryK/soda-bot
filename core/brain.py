@@ -2,6 +2,7 @@ from core.memory import Memory
 from langchain_core.prompts import PromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.runnables.base import RunnableSerializable
 
 
 class LLMOutputFormat(BaseModel):
@@ -26,25 +27,20 @@ class Brain:
         self.parser = JsonOutputParser(pydantic_object=LLMOutputFormat)
 
         # chain
-        self.chain = prompt | llm | self.parser
+        self.chain: RunnableSerializable = prompt | llm | self.parser
 
-    def chat(self, question: str):
-        # result
-        result = self.chain.invoke({
-            'name': self.name,
-            'format_instructions': self.parser.get_format_instructions(),
-            'emotions': self.emotions,
-            'chat_history': self.memory.get_chat_history(),
-            'contexts': self.memory.contexts,
-            'input': question,
-        })
-
-        # add to chat history
-        self.memory.add_message("User", question, None)
-        self.memory.add_message(self.name, result['text'], result['emotions'])
-
-        # save context
-        self.memory.contexts = result['contexts']
-
-        return result
+    def stream(self, question: str):
+        for s in self.chain.stream({
+                'name': self.name,
+                'format_instructions': self.parser.get_format_instructions(),
+                'emotions': self.emotions,
+                'chat_history': self.memory.get_chat_history(),
+                'contexts': self.memory.contexts,
+                'input': question,
+            }):
+            yield(s)
     
+    def add_chat_history(self, question, text, emotions, contexts):
+        self.memory.add_message("User", question, None)
+        self.memory.add_message(self.name, text, emotions)
+        self.memory.contexts = contexts

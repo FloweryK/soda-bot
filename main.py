@@ -16,6 +16,32 @@ from core.stt.realtime_stt import RealtimeSTT
 import config
 
 
+def format_user_message():
+    return f"{Fore.CYAN}You:{Fore.RESET} "
+
+
+def format_ai_message(text, emotions, contexts):
+    # text
+    result = f"{Fore.MAGENTA}Bot:{Fore.RESET} {text}"
+
+    # emotions
+    emotions = {key: f"{value:.1f}" for key, value in emotions.items()}
+    result += f"\n(emotions: {emotions})"
+
+    # contexts
+    result += f"\n(contexts: {contexts})"
+    return result
+
+
+def clear_previous_lines(n=3):
+    # Move the cursor up by 'n' lines
+    print(f"\033[{n}A", end='')
+
+    # Clear each line
+    for _ in range(n):
+        print("\033[K", end='')
+
+
 def main():
     # memory
     memory = Memory(
@@ -53,24 +79,37 @@ def main():
 
 
     while True:
-        # listen
+        # STT
         if config.STT_ON:
-            print(f"{Fore.CYAN}You:{Fore.RESET} ")
+            print(format_user_message())
             question = stt.text()
             print(question, '\n')
         else:
-            print(f"{Fore.CYAN}You:{Fore.RESET} ", end='')
+            print(format_user_message(), end='')
             question = input()
 
+        # LLM
         if question:
-            # answer
-            result = brain.chat(question)
-            text = result['text']
-            emotions = result['emotions']
-            contexts = result['contexts']
-            
-            print(f"{Fore.MAGENTA}Bot:{Fore.RESET} {text}\n({emotions})\n({contexts})")
+            # create a room for ai's messages
+            text = ''
+            emotions = {}
+            contexts = ''
+            print(format_ai_message(text, emotions, contexts))
 
+            for s in brain.stream(question):
+                # clear the room
+                clear_previous_lines(n=3)
+
+                # print the result
+                text = s['text'] if 'text' in s else text
+                emotions = s['emotions'] if 'emotions' in s else emotions
+                contexts = s['contexts'] if 'contexts' in s else contexts
+                print(format_ai_message(text, emotions, contexts))
+
+            # add to chat history
+            brain.add_chat_history(question, text, emotions, contexts)
+
+            # TTS
             if config.TTS_ON:
                 # speak
                 text = emoji.replace_emoji(text, replace='')
