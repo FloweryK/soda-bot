@@ -62,7 +62,7 @@ INIT_MODEL_TRANSCRIPTION_REALTIME = "tiny"
 INIT_REALTIME_PROCESSING_PAUSE = 0.2
 INIT_SILERO_SENSITIVITY = 0.4
 INIT_WEBRTC_SENSITIVITY = 3
-INIT_POST_SPEECH_SILENCE_DURATION = 3
+INIT_POST_SPEECH_SILENCE_DURATION = 2
 INIT_MIN_LENGTH_OF_RECORDING = 0.5
 INIT_MIN_GAP_BETWEEN_RECORDINGS = 0
 INIT_WAKE_WORDS_SENSITIVITY = 0.6
@@ -1648,11 +1648,14 @@ class RealtimeSTT:
             if self.spinner and self.halo:
                 self.halo._interval = 500
         elif new_state == "transcribing":
-            if self.on_transcription_start:
-                self.on_transcription_start()
-            self._set_spinner("transcribing")
             if self.spinner and self.halo:
-                self.halo._interval = 50
+                self.halo.stop()
+                self.halo = None
+            # if self.on_transcription_start:
+            #     self.on_transcription_start()
+            # self._set_spinner("transcribing")
+            # if self.spinner and self.halo:
+            #     self.halo._interval = 50
         elif new_state == "recording":
             self._set_spinner("recording")
             if self.spinner and self.halo:
