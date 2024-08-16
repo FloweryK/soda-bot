@@ -7,6 +7,7 @@ __pycache__
 config.py
 
 # etc
+chat_history/
 archive
 *.log
 .idea
