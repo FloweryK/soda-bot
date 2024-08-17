@@ -29,18 +29,36 @@ class Brain:
         # chain
         self.chain: RunnableSerializable = prompt | llm | self.parser
 
-    def stream(self, question: str):
-        for s in self.chain.stream({
-                'name': self.name,
-                'format_instructions': self.parser.get_format_instructions(),
-                'emotions': self.emotions,
-                'chat_history': self.memory.get_chat_history(),
-                'contexts': self.memory.contexts,
-                'input': question,
-            }):
-            yield(s)
+    def chat(self, question, is_stream):
+        chain_input = {
+            'name': self.name,
+            'format_instructions': self.parser.get_format_instructions(),
+            'emotions': self.emotions,
+            'chat_history': self.memory.get_chat_history(),
+            'contexts': self.memory.contexts,
+            'input': question,
+        }
+        
+        # response buffer
+        res = None
+
+        # get response
+        if is_stream:
+            for s in self.chain.stream(chain_input):
+                yield(s)
+                res = s
+        else:
+            res = self.chain.invoke(chain_input)
+            yield(res)
+        
+        # add to memory
+        self.add_chat_history(question, res)
     
-    def add_chat_history(self, question, text, emotions, contexts):
-        self.memory.add_message("User", question, None)
-        self.memory.add_message(self.name, text, emotions)
-        self.memory.contexts = contexts
+    
+    def add_chat_history(self, question, res):
+        if isinstance(res, dict) and res.keys() == {"text", "emotions", "contexts"}:
+            self.memory.add_message("User", question, None)
+            self.memory.add_message(self.name, res['text'], res['emotions'])
+            self.memory.contexts = res['contexts']
+        else:
+            raise KeyError("invalid resposne:", res)

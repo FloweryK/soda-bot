@@ -16,20 +16,6 @@ from core.stt.realtime_stt import RealtimeSTT
 import config
 
 
-def update_and_print(new_value, old_value, label):
-    if new_value:
-        if isinstance(new_value, dict):
-            print(str(new_value)[len(str(old_value))-1:-1], end='')
-        elif isinstance(new_value, str):
-            print(new_value[len(old_value):], end='')
-        else:
-            raise TypeError("Unimplemented input type:", new_value, type(new_value))
-    else:
-        print(f"{label}", end='')
-
-    return new_value
-
-
 def main():
     # memory
     memory = Memory(
@@ -72,27 +58,36 @@ def main():
             question = input()
 
         # get ai's response to the question
-        if question:
-            text = ''
-            emotions = {}
-            contexts = ''
+        buffer_key = None
+        buffer_value = ""
+        keys_seen = set()
 
-            for s in brain.stream(question):
-                if 'text' in s:
-                    text = update_and_print(s['text'], text, f"{Fore.MAGENTA}Bot:{Fore.RESET} ")
-                if 'emotions' in s:
-                    emotions = update_and_print(s['emotions'], emotions, '\n\temotions -> ')
-                if 'contexts' in s:
-                    contexts = update_and_print(s['contexts'], contexts, '\n\tcontexts -> ')
-            print()
+        for s in brain.chat(question, is_stream=True):
+            for key, value in s.items():
+                if key not in keys_seen:
+                    print(f"{Fore.MAGENTA}Bot:{Fore.RESET} " if key == "text" else f"\n\t{key} -> ", end="")
+                    buffer_key = key
+                    buffer_value = ""
+                    keys_seen.add(key)
 
-            # add to chat history
-            brain.add_chat_history(question, text, emotions, contexts)
+                if key == buffer_key:
+                    # parse value
+                    if isinstance(value, str):
+                        pass
+                    elif isinstance(value, dict):
+                        value = str(value)[1:-1]
+                    else:
+                        raise TypeError("Unsupported input type:", value, type(value))
+                
+                    # print and update
+                    print(value[len(buffer_value):], end='')
+                    buffer_value = value
+        print()
 
-            # create tts from the response
-            if config.TTS_ON:
-                text = emoji.replace_emoji(text, replace='')
-                tts.synthesize(text)
+        # create tts from the response
+        if config.TTS_ON:
+            text = emoji.replace_emoji(text, replace='')
+            tts.synthesize(text)
 
 
 if __name__ == "__main__":
