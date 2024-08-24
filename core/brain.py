@@ -12,13 +12,10 @@ class LLMOutputFormat(BaseModel):
 
 
 class Brain:
-    def __init__(self, llm, name, prompt, emotions, memory: Memory):
+    def __init__(self, llm, name, prompt, emotions, memory_save_dir, memory_short_term_limit):
         # configs
         self.name = name
         self.emotions = emotions
-
-        # memory
-        self.memory = memory
 
         # prompt
         prompt = PromptTemplate.from_template(prompt)
@@ -28,6 +25,9 @@ class Brain:
 
         # chain
         self.chain: RunnableSerializable = prompt | llm | self.parser
+
+        # memory
+        self.memory = Memory(memory_save_dir, memory_short_term_limit)
 
     def chat(self, question, is_stream):
         chain_input = {

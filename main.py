@@ -2,9 +2,10 @@
 from dotenv import load_dotenv
 load_dotenv('.env')
 
-import interface.cli
 import config
+from interface.cli import InterfaceCLI
 
 
 if __name__ == "__main__":
-    interface.cli.run(config)
+    interface = InterfaceCLI(config)
+    interface.run()
