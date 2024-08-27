@@ -22,7 +22,7 @@ class InterfaceDiscord(commands.Bot):
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
-        super().__init__(*args, **kwargs, command_prefix=commands.when_mentioned_or(config.DISCORD_PREFIX), intents=intents)
+        super().__init__(*args, **kwargs, command_prefix=config.DISCORD_PREFIX, intents=intents)
 
         # logger
         self.logger = logging.getLogger(self.__class__.__name__)
