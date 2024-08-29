@@ -4,7 +4,10 @@ from datetime import datetime
 
 
 def format_message(message):
-    return f"[{message['datetime']}] [{message['role']}] {message['text']}" + f" ({message['emotions']})" if message['emotions'] else ""
+    text = f"[{message['datetime']}] [{message['role']}] {message['text']}"
+    if message['emotions']:
+        text += f" ({message['emotions']})"
+    return text
 
 
 class Memory:
