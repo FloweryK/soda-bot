@@ -18,6 +18,7 @@ class Memory:
         # chat history fs
         path_prefix = os.path.join(save_dir, datetime.now().strftime("%Y%m%d"))
         self.path_pickle = path_prefix + '.pickle'
+        self.path_txt = path_prefix + '.txt'
 
         # chat history manager
         self.previous_messages = []
@@ -59,3 +60,5 @@ class Memory:
         # save
         with open(self.path_pickle, 'wb') as f:
             pickle.dump(self.current_messages, f)
+        with open(self.path_txt, 'w') as f:
+            f.write(self.get_chat_history())
