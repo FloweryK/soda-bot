@@ -1,8 +1,9 @@
-from .memory import Memory
+import time
 from langchain_core.prompts import PromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables.base import RunnableSerializable
+from .memory import Memory
 
 
 class LLMOutputFormat(BaseModel):
@@ -17,6 +18,7 @@ class Brain:
         self.name = name
         self.emotions = emotions
         self.retry_limit = 5
+        self.retry_interval = 1
 
         # prompt
         prompt = PromptTemplate.from_template(prompt)
@@ -65,6 +67,7 @@ class Brain:
                 print(f"llm crashed. n_retry: {n_retry}")
                 self.memory.add_message("SYSTEM", f"LLM CRASHED: n_retry={n_retry}", None)
                 n_retry += 1
+                time.sleep(self.retry_interval)
     
     def add_user_message(self, text):
         self.memory.add_message("User", text, None)
