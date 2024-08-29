@@ -63,7 +63,7 @@ class Brain:
                 break
             except:
                 print(f"llm crashed. n_retry: {n_retry}")
-                self.memory.add_message("SYSTEM", f"LLM CRASHED: n_retry={n_retry}", None, is_save=True)
+                self.memory.add_message("SYSTEM", f"LLM CRASHED: n_retry={n_retry}", None)
                 n_retry += 1
     
     def add_user_message(self, text):

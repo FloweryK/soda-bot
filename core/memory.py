@@ -40,15 +40,12 @@ class Memory:
         if os.path.exists(self.path_today):
             with open(self.path_today, 'rb') as f:
                 self.current_messages += pickle.load(f)
-        
-        # add a system message for a new conversation
-        self.add_message('SYSTEM', 'A NEW CHAT STARTED', None, is_save=False)
 
     def get_chat_history(self):
         chat_history = self.previous_messages + self.current_messages
         return '\n'.join(format_message(message) for message in chat_history)
     
-    def add_message(self, role, text, emotions, is_save=True):
+    def add_message(self, role, text, emotions):
         self.current_messages.append({
             'datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'role': role,
@@ -57,6 +54,5 @@ class Memory:
         })
 
         # save
-        if is_save:
-            with open(self.path_today, 'wb') as f:
-                pickle.dump(self.current_messages, f)
+        with open(self.path_today, 'wb') as f:
+            pickle.dump(self.current_messages, f)
