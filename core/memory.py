@@ -15,8 +15,11 @@ class Memory:
         # configs
         self.short_term_limit = short_term_limit
 
+        # chat history fs
+        path_prefix = os.path.join(save_dir, datetime.now().strftime("%Y%m%d"))
+        self.path_pickle = path_prefix + '.pickle'
+
         # chat history manager
-        self.path_today = None
         self.previous_messages = []
         self.current_messages = []
         self.initialize_messages(save_dir)
@@ -28,20 +31,17 @@ class Memory:
         # create save_dir
         os.makedirs(save_dir, exist_ok=True)
 
-        # set today's save path
-        self.path_today = os.path.join(save_dir, datetime.now().strftime("%Y%m%d")) + '.pickle'
-
         # load previous messages
         for file_name in sorted(os.listdir(save_dir)):
-            if file_name.endswith('.pickle'):
-                file_path = os.path.join(save_dir, file_name)
-                if file_path != self.path_today:
-                    with open(file_path, 'rb') as f:
-                        self.previous_messages.extend(pickle.load(f))
+            file_path = os.path.join(save_dir, file_name)
+
+            if file_name.endswith('.pickle') and (file_path != self.path_pickle):
+                with open(file_path, 'rb') as f:
+                    self.previous_messages.extend(pickle.load(f))
         
         # load current messages
-        if os.path.exists(self.path_today):
-            with open(self.path_today, 'rb') as f:
+        if os.path.exists(self.path_pickle):
+            with open(self.path_pickle, 'rb') as f:
                 self.current_messages += pickle.load(f)
 
     def get_chat_history(self):
@@ -57,5 +57,5 @@ class Memory:
         })
 
         # save
-        with open(self.path_today, 'wb') as f:
+        with open(self.path_pickle, 'wb') as f:
             pickle.dump(self.current_messages, f)
