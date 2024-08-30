@@ -63,8 +63,8 @@ class Brain:
                 # add response message
                 self.add_ai_message(res)
                 break
-            except:
-                print(f"llm crashed. n_retry: {n_retry}")
+            except Exception as e:
+                print(f"llm crashed. n_retry: {n_retry} (error: {e})")
                 self.memory.add_message("SYSTEM", f"LLM CRASHED: n_retry={n_retry}", None)
                 n_retry += 1
                 time.sleep(self.retry_interval)
