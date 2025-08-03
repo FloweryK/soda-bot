@@ -1,0 +1,1 @@
+PATH_PROFILE = 'state_store/profile.pickle'

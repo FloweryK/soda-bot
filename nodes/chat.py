@@ -1,8 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
 from langchain.output_parsers import OutputFixingParser
-from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.runnables import RunnableLambda
 from langchain_core.messages import SystemMessage, AIMessage
 from langchain_openai import ChatOpenAI
 from common.state import State
@@ -27,6 +27,9 @@ You must strictly obey the following instructions:
 - Respond based on your emotions, which change over time based on the chat history.
 - You only have five emotions: Fear, Sadness, Joy, Disgust, Anger.
 - Format instructions: {format_instructions}
+
+Here is the profile list you might refer to:
+{profiles}
 ----------------------------------------------------------------------------------------------
 Now, start a conversation.
 """
@@ -61,13 +64,13 @@ def chat(state: State):
     result: LLMOutputFormat = chain.invoke({
         "name": "SODA",
         "format_instructions": parser.get_format_instructions(),
+        "profiles": state["profiles"]
     })
-    print(result)
     print(f"[SODA] {result.text}")
     print(f"\t emotions: {result.emotions}")
     text_formatted = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%s')}] {result}"
 
     return {
         "messages": [AIMessage(text_formatted)],
-        "emotions": result.emotions
+        "emotions": result.emotions,
     }
