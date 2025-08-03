@@ -58,7 +58,7 @@ def chat(state: State):
     chain = prompt | llm | parser
 
     # run chain
-    result = chain.invoke({
+    result: LLMOutputFormat = chain.invoke({
         "name": "SODA",
         "format_instructions": parser.get_format_instructions(),
     })
